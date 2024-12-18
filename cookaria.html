@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookaria</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-4">Cookaria</h1>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Get Recipe Ingredients</h2>
+            <div class="mb-4">
+                <label for="food-type" class="block text-gray-700">Enter a Food Type:</label>
+                <input type="text" id="food-type" class="mt-2 p-2 w-full border rounded-md" placeholder="e.g., Pasta, Pizza">
+            </div>
+            <button id="get-ingredients-btn" class="bg-blue-500 text-white p-2 rounded-md">Get Ingredients</button>
+            <div id="ingredients-list" class="mt-4 hidden">
+                <h3 class="font-semibold">Ingredients:</h3>
+                <ul id="ingredients" class="list-disc pl-5"></ul>
+            </div>
+        </div>
+        
+        <div id="success-message" class="slide-up"></div>
+    </div>
+
+    <script>
+        document.getElementById('get-ingredients-btn').addEventListener('click', () => {
+            const foodType = document.getElementById('food-type').value.trim();
+        
+            if (!foodType) {
+                alert('Please enter a food type.');
+                return;
+            }
+        
+            // Prompt for email
+            const recipientEmail = prompt('Please enter your email address to receive the ingredients:');
+            
+            if (!recipientEmail) {
+                alert('Email is required to proceed.');
+                return;
+            }
+        
+            // Fetch API call to backend proxy (recommended approach)
+            fetch('http://localhost:3000/get-recipe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'recipe',
+                    food_type: foodType,
+                    recipient_email: recipientEmail
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showSuccessMessage();
+                    
+                    // Display ingredients
+                    if (data.ingredients && data.ingredients.length > 0) {
+                        displayIngredients(data.ingredients);
+                    }
+                } else {
+                    // Show error message
+                    alert('Failed to process request: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Unable to connect to the recipe server. Please try again later.');
+            });
+        });
+        
+        // Existing display and success message functions remain the same
+        function displayIngredients(ingredients) {
+            const ingredientsList = document.getElementById('ingredients');
+            const ingredientsDiv = document.getElementById('ingredients-list');
+            ingredientsList.innerHTML = ''; // Clear previous list
+        
+            ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                li.textContent = ingredient;
+                ingredientsList.appendChild(li);
+            });
+        
+            ingredientsDiv.classList.remove('hidden'); // Show the ingredients list
+        }
+        
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('success-message');
+            successMessage.textContent = 'Recipe ingredients email sent successfully! 🎉';
+            successMessage.classList.add('show');
+            
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

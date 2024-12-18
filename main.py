@@ -191,6 +191,7 @@ def handle_client_connection(conn):
                     'message': "No ingredients found",
                     'ingredients': []
                 }
+        
 
         elif request_type == 'fetch_emails':
             # Fetch recent emails request
